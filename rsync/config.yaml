@@ -12,8 +12,6 @@ arch:
 homeassistant: 2025.1.0
 boot: manual
 init: false
-ports: {}
-ports_description: {}
 map:
   - type: share
   - type: homeassistant_config
