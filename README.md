@@ -1,115 +1,128 @@
-# rsync — Home Assistant Add-on
+![rsync logo](rsync/logo.png)
 
-Sync folders between Home Assistant and a remote machine over SSH using rsync. Supports push (HA → remote) and pull (remote → HA) per folder, with per-folder rsync options and configurable SSH port.
-
-[![Add repository to Home Assistant][repo-badge]][repo-url]
-
-**Supported architectures:** amd64, aarch64, armv7, armhf, i386
-
-[repo-badge]: https://img.shields.io/badge/Add-Repository-41BDF5?logo=home-assistant&style=for-the-badge
-[repo-url]: https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fbraveness23%2Frsync
+[![Add to Home Assistant][ha-badge]][ha-url]
+[![Apache 2.0 License][license-badge]][license-url]
 
 ---
 
-## Prerequisites
+This add-on wraps `rsync` over SSH to sync folders between your Home Assistant instance and a remote machine. Whether you're backing up your `/config` directory offsite, pulling media files from a NAS, or keeping a warm standby in sync — if rsync can do it, this add-on can automate it.
 
-- `rsync` must be installed on the **remote machine**
-- The remote machine must accept SSH key authentication
-- The SSH public key must be added to `~/.ssh/authorized_keys` on the remote
+Each folder entry in the config can push *or* pull independently, with its own rsync options. The add-on runs, syncs everything, and exits — pair it with an automation to trigger it on a schedule.
 
----
+## What you'll need
 
-## Installation
+- `rsync` installed on the **remote machine** (if you see `bash: rsync: command not found` in the logs, that's why)
+- SSH key-based authentication set up for your user on the remote
+- The remote's SSH port reachable from your HA instance
 
-1. Add this repository to Home Assistant: **Settings → Add-ons → Add-on Store → ⋮ → Repositories**
-2. Find **rsync** and click **Install**
-3. Configure the add-on (see below) before starting it
+## Getting started
 
----
+### 1. Add the repository
 
-## Configuration
+Click the badge above, or go to **Settings → Add-ons → Add-on Store → ⋮ → Repositories** and paste:
 
-```yaml
-private_key_file: /ssl/rsync/id_rsa   # path inside /ssl volume
-username: myuser                        # SSH user on the remote machine
-remote_host: 192.168.1.100             # IP or hostname of the remote
-remote_port: 22                         # optional, defaults to 22
-folders:
-  - local: /config                      # push /config to remote
-    remote: /home/myuser/ha-backup
-    direction: push                     # push = HA → remote (default)
-  - local: /media/music                 # pull music from remote
-    remote: /home/myuser/music
-    direction: pull                     # pull = remote → HA
-    options: '--archive --compress'     # optional: override default rsync flags
+```text
+https://github.com/braveness23/rsync
 ```
 
-### Options reference
+### 2. Install and configure
 
-| Key | Required | Description |
-| --- | --- | --- |
-| `private_key_file` | Yes | Path to the SSH private key (must be under `/ssl/`) |
-| `username` | Yes | SSH username on the remote machine |
-| `remote_host` | Yes | IP address or hostname of the remote machine |
-| `remote_port` | No | SSH port (default: `22`) |
-| `folders[].local` | Yes | Local path on Home Assistant |
-| `folders[].remote` | Yes | Remote path on the target machine |
-| `folders[].direction` | No | `push` (HA → remote) or `pull` (remote → HA). Default: `push` |
-| `folders[].options` | No | rsync flags. Default: `--archive --recursive --compress --delete --prune-empty-dirs` |
+After installing, edit the configuration before starting the add-on. At minimum you need `remote_host`, `username`, and at least one folder.
 
----
+### 3. Copy your public key to the remote
 
-## SSH Key Setup
-
-If no key file exists at `private_key_file`, the add-on generates an **Ed25519** key pair on first run and saves it to the configured path.
-
-To authorize the key on your remote machine, copy the **public key** (`/ssl/rsync/id_rsa.pub`) to the remote:
+On first run, the add-on generates an Ed25519 key pair and saves it to the path you configured (default: `/ssl/rsync/id_rsa`). You'll find the public key at `/ssl/rsync/id_rsa.pub`. Copy it to your remote:
 
 ```bash
 ssh-copy-id -i /path/to/id_rsa.pub myuser@192.168.1.100
 ```
 
-Or manually append the contents of `id_rsa.pub` to `~/.ssh/authorized_keys` on the remote.
+Or paste the contents of `id_rsa.pub` into `~/.ssh/authorized_keys` on the remote. Once that's done, start the add-on and check the logs.
 
-> The add-on uses `StrictHostKeyChecking=accept-new` — it will automatically trust a host on the **first** connection and verify it on all subsequent ones. If the host key changes unexpectedly, the sync will fail and log an error.
+## Configuration
 
----
+```yaml
+private_key_file: /ssl/rsync/id_rsa
+username: myuser
+remote_host: 192.168.1.100
+remote_port: 22  # optional
+folders:
+  - local: /config
+    remote: /home/myuser/ha-backup
+    direction: push
 
-## Running on a Schedule
+  - local: /media/music
+    remote: /home/myuser/music
+    direction: pull
+    options: "--archive --compress"
+```
 
-This add-on runs once and exits. Use a **Home Assistant Automation** to trigger it on a schedule:
+### Options
+
+| Key | Required | Default | Description |
+| --- | --- | --- | --- |
+| `private_key_file` | yes | `/ssl/rsync/id_rsa` | Path to SSH private key. Must be under `/ssl/`. |
+| `username` | yes | — | SSH user on the remote machine. |
+| `remote_host` | yes | — | IP address or hostname of the remote. |
+| `remote_port` | no | `22` | SSH port on the remote. |
+| `folders[].local` | yes | — | Local path on Home Assistant to sync. |
+| `folders[].remote` | yes | — | Corresponding path on the remote machine. |
+| `folders[].direction` | no | `push` | `push` sends local → remote. `pull` receives remote → local. |
+| `folders[].options` | no | see below | Custom rsync flags, replacing the defaults entirely. |
+
+Default rsync options when `options` is not set:
+
+```text
+--archive --recursive --compress --delete --prune-empty-dirs
+```
+
+## Running on a schedule
+
+The add-on runs once and exits — it doesn't loop in the background. To sync automatically, trigger it from a Home Assistant automation:
 
 ```yaml
 automation:
   alias: Nightly rsync backup
   trigger:
-    - platform: time
-      at: "02:00:00"
+    platform: time
+    at: "02:30:00"
   action:
-    - service: hassio.addon_start
-      data:
-        addon: local_rsync
+    service: hassio.addon_start
+    data:
+      addon: local_rsync
 ```
 
----
+## Volume access
 
-## Volumes Accessible to This Add-on
+The add-on can read and write the following HA directories:
 
-| Volume | Access | Notes |
-| --- | --- | --- |
-| `/share` | read/write | General shared storage |
-| `/config` | read/write | Home Assistant configuration |
-| `/ssl` | read/write | SSH key storage |
-| `/backup` | **read-only** | HA backup archives |
-| `/media` | **read-only** | Media files |
-
----
+| Path | Access |
+| --- | --- |
+| `/share` | read / write |
+| `/config` | read / write |
+| `/ssl` | read / write (key storage) |
+| `/backup` | read only |
+| `/media` | read only |
 
 ## Troubleshooting
 
-| Symptom | Likely cause |
-| --- | --- |
-| `bash: rsync: command not found` | rsync not installed on the remote machine |
-| `Permission denied (publickey)` | Public key not in `authorized_keys` on the remote |
-| `Host key verification failed` | Remote host key changed — remove the old entry from the container's `known_hosts` |
-| Sync exits after first folder fails | Check logs for `Sync failed:` entries; remaining folders will still be attempted |
+`Permission denied (publickey)` — The public key hasn't been added to `authorized_keys` on the remote yet.
+
+`Host key verification failed` — The remote's SSH host key changed (e.g. after a reinstall). The add-on uses `StrictHostKeyChecking=accept-new`, so it accepts new hosts automatically but will reject a changed key. Remove the old entry from the container's known hosts and re-run.
+
+`bash: rsync: command not found` — rsync isn't installed on the remote machine.
+
+One folder fails but others don't run — This was fixed in a recent update. The add-on now logs the failure and continues with remaining folders, then exits with a non-zero code at the end.
+
+---
+
+## License & attribution
+
+Released under the [Apache License 2.0](LICENCE).
+
+Forked from the [rsync add-on by Markus Poeschl](https://github.com/Poeschl-HomeAssistant-Addons/rsync) (Apache 2.0). Changes include security hardening, Alpine upgrade, and updated documentation. See [NOTICE](NOTICE) for the full attribution.
+
+[ha-badge]: https://img.shields.io/badge/Add%20to-Home%20Assistant-41BDF5?logo=home-assistant&style=flat-square
+[ha-url]: https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fbraveness23%2Frsync
+[license-badge]: https://img.shields.io/badge/license-Apache%202.0-blue?style=flat-square
+[license-url]: LICENCE

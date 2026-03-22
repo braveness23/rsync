@@ -1,0 +1,14 @@
+rsync — Home Assistant Add-on
+Copyright 2026 braveness23
+
+This project is a derivative work of the rsync add-on originally created by
+Markus Poeschl (Poeschl-HomeAssistant-Addons):
+
+  https://github.com/Poeschl-HomeAssistant-Addons/rsync
+
+The original work is licensed under the Apache License, Version 2.0.
+
+Modifications made in this fork include security hardening (SSH host key
+verification, shell injection fix, SSH option hardening), Alpine base image
+upgrade to 3.20, restricted volume mount permissions, and updated
+documentation and branding.

@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120">
+  <defs>
+    <linearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0D47A1"/>
+      <stop offset="100%" stop-color="#1E88E5"/>
+    </linearGradient>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="4" markerHeight="4" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="white"/>
+    </marker>
+  </defs>
+
+  <!-- White background -->
+  <rect width="400" height="120" fill="white"/>
+
+  <!-- Icon square -->
+  <rect x="12" y="12" width="96" height="96" rx="17" fill="url(#grad)"/>
+
+  <!-- Sync arrows in icon (scaled/offset version) -->
+  <!-- Top arc -->
+  <path d="M 34 60 A 27 27 0 0 1 90 60"
+        stroke="white" stroke-width="6.5" fill="none"
+        stroke-linecap="round" marker-end="url(#arr)"/>
+  <!-- Bottom arc -->
+  <path d="M 90 60 A 27 27 0 0 1 34 60"
+        stroke="white" stroke-width="6.5" fill="none"
+        stroke-linecap="round" marker-end="url(#arr)"/>
+
+  <!-- "rsync" wordmark -->
+  <text x="124" y="68"
+        font-family="'Segoe UI', 'Liberation Sans', Arial, sans-serif"
+        font-size="46" font-weight="700"
+        fill="#0D47A1" letter-spacing="-1">rsync</text>
+
+  <!-- Subtitle -->
+  <text x="126" y="90"
+        font-family="'Segoe UI', 'Liberation Sans', Arial, sans-serif"
+        font-size="14" font-weight="400"
+        fill="#546E7A" letter-spacing="0.5">Home Assistant Add-on</text>
+
+  <!-- Thin accent line under icon -->
+  <line x1="12" y1="110" x2="108" y2="110" stroke="#1E88E5" stroke-width="2" stroke-linecap="round"/>
+</svg>
