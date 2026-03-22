@@ -2,7 +2,7 @@ name: rsync
 version: dev
 slug: rsync
 description: Sync folders to a remote machine via ssh and rsync.
-url: https://github.com/Poeschl-HomeAssistant-Addons/rsync
+url: https://github.com/braveness23/rsync
 arch:
   - armhf
   - armv7
@@ -12,7 +12,6 @@ arch:
 homeassistant: 2025.1.0
 boot: manual
 init: false
-image: ghcr.io/poeschl-homeassistant-addons/rsync-{arch}
 ports: {}
 ports_description: {}
 map:

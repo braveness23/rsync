@@ -13,5 +13,39 @@ on:
   workflow_dispatch:
 
 jobs:
-  workflows:
-    uses: Poeschl-HomeAssistant-Addons/workflows/.github/workflows/addon-ci.yaml@main
+  lint-yaml:
+    name: Lint YAML
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ibiqlik/action-yamllint@v3
+        with:
+          config_file: .yamllint
+
+  lint-shell:
+    name: Lint Shell
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: ./rsync/root
+
+  build:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    needs: [lint-yaml, lint-shell]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build image (amd64)
+        uses: docker/build-push-action@v5
+        with:
+          context: rsync
+          push: false
+          build-args: BUILD_FROM=ghcr.io/home-assistant/amd64-base:3.20
+          platforms: linux/amd64
