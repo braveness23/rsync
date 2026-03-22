@@ -3,14 +3,11 @@
 Sync folders between Home Assistant and a remote machine over SSH using rsync. Supports push (HA → remote) and pull (remote → HA) per folder, with per-folder rsync options and configurable SSH port.
 
 [![Add repository to Home Assistant][repo-badge]][repo-url]
-[![Install on Home Assistant][install-badge]][install-url]
 
 **Supported architectures:** amd64, aarch64, armv7, armhf, i386
 
 [repo-badge]: https://img.shields.io/badge/Add-Repository-41BDF5?logo=home-assistant&style=for-the-badge
 [repo-url]: https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fbraveness23%2Frsync
-[install-badge]: https://img.shields.io/badge/Install-Add--on-41BDF5?logo=home-assistant&style=for-the-badge
-[install-url]: https://my.home-assistant.io/redirect/supervisor_addon?addon=b10c135f_rsync
 
 ---
 
