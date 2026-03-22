@@ -9,7 +9,7 @@ arch:
   - aarch64
   - amd64
   - i386
-homeassistant: 2023.12.1
+homeassistant: 2025.1.0
 boot: manual
 init: false
 image: ghcr.io/poeschl-homeassistant-addons/rsync-{arch}
@@ -17,17 +17,12 @@ ports: {}
 ports_description: {}
 map:
   - type: share
-    read_only: false
   - type: homeassistant_config
-    read_only: false
-  - type: backup
-    read_only: false
-  - type: addons
-    read_only: false
   - type: ssl
-    read_only: false
+  - type: backup
+    read_only: true
   - type: media
-    read_only: false
+    read_only: true
 schema:
   private_key_file: match(^/ssl/.+)
   username: str
